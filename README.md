@@ -30,7 +30,7 @@ oyunlaştırma dinamikleri içeren bir dijital evcil hayvan uygulamasıdır.
 ### Kurulum
 ```bash
 # Repoyu klonla
-git clone https://github.com/[KULLANICI_ADIN]/DigiPet.git
+git clone https://github.com/eraycubukcu/DigiPet.git
 
 # Klasöre gir
 cd DigiPet
