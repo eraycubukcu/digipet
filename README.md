@@ -49,7 +49,7 @@ npx expo start
 
 ## 🎥 Tanıtım Videosu
 
-👉 [YouTube'da İzle]([YOUTUBE_LINK])
+👉 [YouTube'da İzle](https://youtube.com/shorts/L7U7vHdvtCw?feature=share)
 
 ## 🛠️ Kullanılan Teknolojiler
 
