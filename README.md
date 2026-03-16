@@ -59,3 +59,61 @@ npx expo start
 - AsyncStorage
 - Expo Router
 - React Native Animated API
+
+# 📋 DigiPet — Kullanıcı Geri Bildirim Raporu
+
+**Tarih:** 16 Mart 2026  
+**Test Eden Kişi Sayısı:** 2  
+**Test Yöntemi:** APK kurulumu ile doğrudan cihazda test
+
+---
+
+## 👤 Kullanıcı 1 — Mert
+
+**En çok beğenilen özellik:**
+Uygulama içi animasyonlar ve efektler beğenildi.
+
+**Zorluk yaşanan alan:**
+Uygulamanın kalitesinin bu kadar yüksek olması şaşırttı,
+herhangi bir kullanım zorluğu yaşanmadı.
+
+**Eksik bulunan özellik:**
+Uygulamanın henüz Play Store'da yayınlanmıyor olması
+en büyük eksiklik olarak belirtildi.
+
+---
+
+## 👤 Kullanıcı 2 — Hüseyin
+
+**En çok beğenilen özellik:**
+Türkçe ve İngilizce dil seçeneğinin bulunması olumlu
+karşılandı.
+
+**Zorluk yaşanan alan:**
+Herhangi bir kullanım zorluğu yaşanmadı.
+
+**Eksik bulunan özellik:**
+Eksik bir özellik bulunmadı, mevcut özellikler yeterli
+ve tatmin edici bulundu.
+
+---
+
+## 📊 Genel Değerlendirme
+
+| Kriter | Değerlendirme |
+|---|---|
+| Kullanım Kolaylığı | ⭐⭐⭐⭐⭐ |
+| Tasarım | ⭐⭐⭐⭐⭐ |
+| Eğlence | ⭐⭐⭐⭐⭐ |
+| Dil Desteği | ⭐⭐⭐⭐⭐ |
+
+## 💡 Sonuç
+
+Kullanıcı testleri sonucunda DigiPet uygulaması
+genel olarak çok olumlu geri bildirimler aldı.
+Animasyonlar ve dil desteği öne çıkan güçlü
+özellikler olarak belirlendi. Play Store'da
+yayınlanması en çok beklenen gelişme olarak
+not edildi.
+
+
