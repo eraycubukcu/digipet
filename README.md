@@ -41,10 +41,11 @@ npm install
 # Uygulamayı başlat
 npx expo start
 ```
-
 ## 📦 İndirme
 
-👉 [APK İndir](https://expo.dev/accounts/cubukcu/projects/DigiPet/builds/437af576-2869-4884-abc4-83f4c416772e)
+👉 [APK İndir (GitHub)](https://github.com/eraycubukcu/digipet/raw/main/DigiPet.apk)
+
+👉 [APK İndir (Expo)](https://expo.dev/accounts/cubukcu/projects/DigiPet/builds/437af576-2869-4884-abc4-83f4c416772e)
 
 ## 🎥 Tanıtım Videosu
 
