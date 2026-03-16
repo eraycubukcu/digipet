@@ -16,9 +16,6 @@ oyunlaştırma dinamikleri içeren bir dijital evcil hayvan uygulamasıdır.
 - 🌍 Türkçe / İngilizce dil desteği
 - 💾 AsyncStorage ile otomatik kayıt
 
-## 📱 Ekran Görüntüleri
-
-[Buraya ekran görüntüsü ekle]
 
 ## 🚀 Nasıl Çalıştırılır?
 
