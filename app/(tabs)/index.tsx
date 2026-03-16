@@ -19,6 +19,8 @@ import {
   Alert,
   StatusBar,
   Animated,
+  AppState,           // ← arka plan / ön plan geçişi için
+  AppStateStatus,
 } from 'react-native';
 import {
   usePet,
@@ -33,12 +35,18 @@ import {
   rastgeleGorevlerUret,
   PetTip,
   GOREV_TANIMLARI,
+  STORAGE_ARKA_PLAN_KEY,  // ← yeni export
 } from '../../context/PetContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ─── SLOT MACHINE ZAMANLAMA ───────────────────────────────────────────────────
 const SLOT_HIZLI_MS   = 80;
 const SLOT_YAVAS      = [150, 300, 500];
 const SLOT_SURE_MS    = 2000;
+
+// ─── ZAMAN BAZLI DÜŞÜŞ ───────────────────────────────────────────────────────
+const DUSUS_ARALIK_MS  = 30_000;  // 30 saniyede bir tick
+const ARKA_PLAN_CAP_SN = 14_400; // maksimum 4 saat etkisi
 
 // ─── OYUN DELTA DEĞERLERİ ────────────────────────────────────────────────────
 const DELTA: Record<string, { aclik?: number; mutluluk?: number; enerji?: number; puan: number; altin: number }> = {
@@ -144,6 +152,62 @@ const ucanStil = StyleSheet.create({
     color:      '#fbbf24',
     zIndex:     99,
   },
+});
+
+// ─── TOAST BİLEŞENİ ──────────────────────────────────────────────────────────
+/**
+ * Ekranın üstünde 2 sn görünüp kaybolan uyarı mesajı.
+ * Alert kullanmadan, tamamen Animated ile yapılmıştır.
+ */
+interface ToastProps { mesaj: string; gorünur: boolean }
+const Toast = ({ mesaj, gorünur }: ToastProps) => {
+  const opak  = useRef(new Animated.Value(0)).current;
+  const transY = useRef(new Animated.Value(-20)).current;
+
+  useEffect(() => {
+    if (!gorünur) return;
+    Animated.parallel([
+      Animated.timing(opak,   { toValue: 1,   duration: 250, useNativeDriver: true }),
+      Animated.timing(transY, { toValue: 0,   duration: 250, useNativeDriver: true }),
+    ]).start();
+  }, [gorünur]);
+
+  useEffect(() => {
+    if (gorünur) return;
+    Animated.parallel([
+      Animated.timing(opak,   { toValue: 0,   duration: 300, useNativeDriver: true }),
+      Animated.timing(transY, { toValue: -20, duration: 300, useNativeDriver: true }),
+    ]).start();
+  }, [gorünur]);
+
+  return (
+    <Animated.View
+      style={[toastStil.kutu, { opacity: opak, transform: [{ translateY: transY }] }]}
+      pointerEvents="none"
+    >
+      <Text style={toastStil.metin}>{mesaj}</Text>
+    </Animated.View>
+  );
+};
+
+const toastStil = StyleSheet.create({
+  kutu:  {
+    position:        'absolute',
+    bottom:          80,          // tab bar'ın hemen üstünde
+    alignSelf:       'center',
+    backgroundColor: 'rgba(30,30,30,0.92)',
+    borderRadius:    24,
+    paddingHorizontal: 20,
+    paddingVertical:   12,
+    zIndex:          200,
+    // Gölge
+    shadowColor:    '#000',
+    shadowOffset:   { width: 0, height: 4 },
+    shadowOpacity:  0.25,
+    shadowRadius:   8,
+    elevation:      10,
+  },
+  metin: { color: '#fff', fontWeight: '700', fontSize: 14 },
 });
 
 // ╔══════════════════════════════════════════════════════════════════════════╗
@@ -266,6 +330,84 @@ const AnaOyunEkrani = () => {
   const [kutlamaBanner, setKutlamaBanner] = useState('');
   const kutlamaOpak = useRef(new Animated.Value(0)).current;
 
+  // ─── TOAST STATE ─────────────────────────────────────────────────────────
+  const [toastMesaj,  setToastMesaj]  = useState('');
+  const [toastGorünur, setToastGorünur] = useState(false);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** Toast'ı 2 sn gösterir, sonra gizler */
+  const toastGoster = useCallback((mesaj: string) => {
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    setToastMesaj(mesaj);
+    setToastGorünur(true);
+    toastTimeoutRef.current = setTimeout(() => setToastGorünur(false), 2000);
+  }, []);
+
+  // ─── ZAMAN BAZLI DÜŞÜŞ — 30sn TIMER ─────────────────────────────────────
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    // Timer'ı başlat
+    timerRef.current = setInterval(() => {
+      dispatch({ type: 'ZAMAN_DUSUS' });
+    }, DUSUS_ARALIK_MS);
+
+    // Cleanup: unmount'ta timer'ı temizle
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [dispatch]);
+
+  // ─── ARKA PLAN TAKİBİ — AppState ─────────────────────────────────────────
+  useEffect(() => {
+    const abonelik = AppState.addEventListener('change', async (yeniDurum: AppStateStatus) => {
+      if (yeniDurum === 'background' || yeniDurum === 'inactive') {
+        // Arka plana geçince zamanı kaydet
+        await AsyncStorage.setItem(STORAGE_ARKA_PLAN_KEY, String(Date.now()));
+      } else if (yeniDurum === 'active') {
+        // Öne geçince geçen süreyi hesapla
+        const kayitliStr = await AsyncStorage.getItem(STORAGE_ARKA_PLAN_KEY);
+        if (!kayitliStr) return;
+        const gecenMs = Date.now() - Number(kayitliStr);
+        const gecenSn = Math.floor(gecenMs / 1000);
+        if (gecenSn >= 30) {
+          dispatch({ type: 'ARKA_PLAN_DUSUS', payload: { saniye: gecenSn } });
+        }
+        await AsyncStorage.removeItem(STORAGE_ARKA_PLAN_KEY);
+      }
+    });
+    return () => abonelik.remove();
+  }, [dispatch]);
+
+  // ─── DÜŞÜK STAT TOAST UYARILARI ──────────────────────────────────────────
+  const oncekiAclik    = useRef(state.aclik);
+  const oncekiMutluluk = useRef(state.mutluluk);
+
+  useEffect(() => {
+    // Aclik yeni 2'ye düştüyse uyar (sadece düşüş anında)
+    if (state.aclik <= 2 && oncekiAclik.current > 2 && state.isim) {
+      toastGoster(`⚠️ ${state.isim} ${state.dil === 'tr' ? 'acıktı!' : 'is hungry!'}`);
+    }
+    oncekiAclik.current = state.aclik;
+  }, [state.aclik]);
+
+  useEffect(() => {
+    // Mutluluk yeni 2'ye düştüyse uyar
+    if (state.mutluluk <= 2 && oncekiMutluluk.current > 2 && state.isim) {
+      toastGoster(`😢 ${state.isim} ${state.dil === 'tr' ? 'üzgün!' : 'is sad!'}`);
+    }
+    oncekiMutluluk.current = state.mutluluk;
+  }, [state.mutluluk]);
+
+  // Enerji toast uyarısı — önceki değer takip edilir
+  const oncekiEnerji = useRef(state.enerji);
+  useEffect(() => {
+    if (state.enerji <= 2 && oncekiEnerji.current > 2 && state.isim) {
+      toastGoster(`😴 ${state.isim} ${state.dil === 'tr' ? 'çok yorgun!' : 'is exhausted!'}`);
+    }
+    oncekiEnerji.current = state.enerji;
+  }, [state.enerji]);
+
   // Durumu hesapla
   const durum = durumHesapla(state.aclik, state.mutluluk, state.enerji);
   const arkaplanRenk = DURUM_ARKAPLAN[durum][tema.arkaplan === '#0f172a' ? 'dark' : 'light'];
@@ -373,6 +515,8 @@ const AnaOyunEkrani = () => {
   return (
     <SafeAreaView style={[styles.guvenliAlan, { backgroundColor: arkaplanRenk }]}>
       <StatusBar barStyle="light-content" />
+      {/* ── Toast uyarı bileşeni (tüm ekranın üstünde) ── */}
+      <Toast mesaj={toastMesaj} gorünur={toastGorünur} />
       <Animated.View style={{ flex: 1, opacity: ekranOpak }}>
         <ScrollView contentContainerStyle={styles.oyunKapsayici}>
 

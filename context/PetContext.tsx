@@ -15,8 +15,9 @@ import React, {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ─── STORAGE ANAHTARLARI ──────────────────────────────────────────────────────
-export const STORAGE_KAYIT_KEY      = 'digiPetKayit';
-export const STORAGE_ONBOARDING_KEY = 'onboardingTamamlandi';
+export const STORAGE_KAYIT_KEY       = 'digiPetKayit';
+export const STORAGE_ONBOARDING_KEY  = 'onboardingTamamlandi';
+export const STORAGE_ARKA_PLAN_KEY   = 'sonAktifZaman'; // arka plan →  aktif geçiş için
 
 // ─── SABİT OYUN DEĞERLERİ ────────────────────────────────────────────────────
 export const MAX_STAT = 10;
@@ -380,7 +381,10 @@ export type PetAction =
   | { type: 'DIL_DEGISTIR'; payload: Dil }
   | { type: 'KARANLIK_MOD_TOGGL' }
   | { type: 'YUKLE'; payload: Partial<PetState> }
-  | { type: 'SIFIRLA' };
+  | { type: 'SIFIRLA' }
+  // ── Zaman bazlı düşüş ──────────────────────────────────────────────────
+  | { type: 'ZAMAN_DUSUS' }                             // her 30 sn çalışır
+  | { type: 'ARKA_PLAN_DUSUS'; payload: { saniye: number } }; // arka plandan dönerken
 
 // ─── BAŞLANGIÇ STATE ─────────────────────────────────────────────────────────
 const baslangicState: PetState = {
@@ -547,6 +551,33 @@ function petReducer(state: PetState, action: PetAction): PetState {
 
     case 'SIFIRLA':
       return { ...baslangicState };
+
+    // ── Her 30 saniyede bir tetiklenir ──────────────────────────────────────
+    case 'ZAMAN_DUSUS': {
+      // aclik ve mutluluk her tick'te -1, enerji her 2. tick'te -1
+      // Enerji için hafızasız yaklaşım: rastgele %50 ihtimalle düş
+      // (alternatif: state'te sayaç tutmak; bu daha sade)
+      const yeniAclik    = Math.max(0, state.aclik    - 1);
+      const yeniMutluluk = Math.max(0, state.mutluluk - 1);
+      const yeniEnerji   = Math.max(0, state.enerji   - (Math.random() < 0.5 ? 1 : 0));
+      return { ...state, aclik: yeniAclik, mutluluk: yeniMutluluk, enerji: yeniEnerji };
+    }
+
+    // ── Arka plandan dönerken geçen süreye göre toplu düşüş ────────────────
+    case 'ARKA_PLAN_DUSUS': {
+      const { saniye } = action.payload;
+      // Maksimum 4 saat (14400 sn) etki; daha fazlası hesaba katılmaz
+      const capliSaniye  = Math.min(saniye, 14_400);
+      const aclikDusus   = Math.floor(capliSaniye / 30);  // her 30 sn -1
+      const mutlulukDusu = Math.floor(capliSaniye / 30);  // her 30 sn -1
+      const enerjiDusu   = Math.floor(capliSaniye / 60);  // her 60 sn -1
+      return {
+        ...state,
+        aclik:    Math.max(0, state.aclik    - aclikDusus),
+        mutluluk: Math.max(0, state.mutluluk - mutlulukDusu),
+        enerji:   Math.max(0, state.enerji   - enerjiDusu),
+      };
+    }
 
     default:
       return state;
