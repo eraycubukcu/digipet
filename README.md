@@ -63,12 +63,28 @@ npx expo start
 # 📋 DigiPet — Kullanıcı Geri Bildirim Raporu
 
 **Tarih:** 16 Mart 2026  
-**Test Eden Kişi Sayısı:** 2  
+**Test Eden Kişi Sayısı:** 3  
 **Test Yöntemi:** APK kurulumu ile doğrudan cihazda test
 
 ---
 
-## 👤 Kullanıcı 1 — Mert
+## 👤 Kullanıcı 1 — Yılmaz
+
+**En çok beğenilen özellik:**
+Karakterin büyüyüp gelişmesi ve seviye atlama sistemi
+çok eğlenceli bulundu.
+
+**Zorluk yaşanan alan:**
+İlk açılışta onboarding ekranı sayesinde uygulama
+kolayca anlaşıldı, herhangi bir zorluk yaşanmadı.
+
+**Eksik bulunan özellik:**
+Arkadaşlarla rekabet edilebilecek bir liderlik tablosu
+(leaderboard) eklenmesi önerildi.
+
+---
+
+## 👤 Kullanıcı 2 — Mert
 
 **En çok beğenilen özellik:**
 Uygulama içi animasyonlar ve efektler beğenildi.
@@ -83,7 +99,7 @@ en büyük eksiklik olarak belirtildi.
 
 ---
 
-## 👤 Kullanıcı 2 — Hüseyin
+## 👤 Kullanıcı 3 — Hüseyin Mert Yağmur
 
 **En çok beğenilen özellik:**
 Türkçe ve İngilizce dil seçeneğinin bulunması olumlu
@@ -111,9 +127,9 @@ ve tatmin edici bulundu.
 
 Kullanıcı testleri sonucunda DigiPet uygulaması
 genel olarak çok olumlu geri bildirimler aldı.
-Animasyonlar ve dil desteği öne çıkan güçlü
-özellikler olarak belirlendi. Play Store'da
-yayınlanması en çok beklenen gelişme olarak
+Animasyonlar, dil desteği ve seviye sistemi öne
+çıkan güçlü özellikler olarak belirlendi.
+Play Store'da yayınlanması ve liderlik tablosu
+eklenmesi en çok beklenen gelişmeler olarak
 not edildi.
-
 
